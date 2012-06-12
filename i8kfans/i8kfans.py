@@ -6,12 +6,12 @@
     graphics card) to maintain the right temperatures. This affect both fans,
     the cpu and the gpu fan.
 
-    Based on a 2006 bash script by Wheelspin. This old script served faithfully
-    me for many years, but my ears couldn't stand much longer its random and
-    common slow downs/speed ups. Over the years, fans have become more and more
-    loud. This new script runs in a more smooth way, with less sudden changes.
-    It's cheaper than replace booth fans, don't you think?
-
+    Based on a 2006 bash script by Wheelspin, `i8kapplet`. This old script
+    served faithfully me for many years, but my ears couldn't stand much longer
+    its random and common slow downs/speed ups. Over the years, fans have
+    become more and more loud. This new script runs in a more smooth way, with
+    less sudden changes.  It's cheaper than replace booth fans, don't you
+    think?
 """
 
 
@@ -34,8 +34,8 @@
 
 __author__ = "joe di castro <joe@joedicastro.com>"
 __license__ = "GNU General Public License version 3"
-__date__ = "11/06/2012"
-__version__ = "0.1"
+__date__ = "12/06/2012"
+__version__ = "0.2"
 
 
 try:
@@ -66,7 +66,7 @@ def get_right_fan_speed(current_temperature, current_fan_speed, temp_triggers):
 
     :current_temperature: current temperature value for the fan implied
     :current_fan_speed: current fan speed
-    :temp_triggers: the threshold temp_triggers to trigger the fan speed change
+    :temp_triggers: the threshold temperatures to trigger the fan speed change
     :returns: right fan speed or "-" (means change nothing to i8kfan)
 
     """
@@ -125,6 +125,11 @@ if __name__ == "__main__":
 ###############################################################################
 #                                  Changelog                                  #
 ###############################################################################
+#
+# 0.2:
+#
+# * Fix an error in a function docstring due to refactorization
+# * Give appropriate credit to original idea' script
 #
 # 0.1:
 #
