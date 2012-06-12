@@ -2,9 +2,13 @@
 # -*- coding: utf8 -*-
 
 """
-    i8kfans.py: Adjust the fans speed in Dell Inspiron laptops (with a nvidia
+    i8kfans.py: Adjust the fans speed in various Dell laptops (with a nvidia
     graphics card) to maintain the right temperatures. This affect both fans,
-    the cpu and the gpu fan.
+    the cpu and the gpu fan. Originally i8k was created to run in a Dell
+    Inspiron 8000 laptop, but this Dell fan control via SMM BIOS is available
+    in others laptops of various series (Inspiron, XPS, Latitude, etcetera),
+    but not all of them are supported. Mine is an Inspiron 9400 but I tested
+    this successfully in a XPS m1330 too.
 
     Based on a 2006 bash script by Wheelspin, `i8kapplet`. This old script
     served faithfully me for many years, but my ears couldn't stand much longer
@@ -12,6 +16,9 @@
     become more and more loud. This new script runs in a more smooth way, with
     less sudden changes.  It's cheaper than replace booth fans, don't you
     think?
+
+    This script needs the `i8kutils` linux package installed and the `i8k`
+    kernel module loaded to work.
 """
 
 
@@ -35,7 +42,7 @@
 __author__ = "joe di castro <joe@joedicastro.com>"
 __license__ = "GNU General Public License version 3"
 __date__ = "12/06/2012"
-__version__ = "0.2"
+__version__ = "0.3"
 
 
 try:
@@ -125,6 +132,10 @@ if __name__ == "__main__":
 ###############################################################################
 #                                  Changelog                                  #
 ###############################################################################
+#
+# 0.3:
+#
+# * Better documentation
 #
 # 0.2:
 #
