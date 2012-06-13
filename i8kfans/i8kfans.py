@@ -63,7 +63,7 @@ def check_execs(*progs):
         try:
             Popen([prog, '--help'], stdout=PIPE, stderr=PIPE)
         except OSError:
-            msg = 'The {0} program is necessary to run this script'.format(prog)
+            msg = 'The {0} program is necessary to run this.'.format(prog)
             exit(msg)
     return
 
