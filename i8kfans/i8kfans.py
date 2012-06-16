@@ -41,8 +41,8 @@
 
 __author__ = "joe di castro <joe@joedicastro.com>"
 __license__ = "GNU General Public License version 3"
-__date__ = "12/06/2012"
-__version__ = "0.3"
+__date__ = "16/06/2012"
+__version__ = "0.4"
 
 
 try:
@@ -68,35 +68,46 @@ def check_execs(*progs):
     return
 
 
-def get_right_fan_speed(current_temperature, current_fan_speed, temp_triggers):
-    """Get the right fan speed to use with i8kfan command.
+def set_right_fan_speed(fan):
+    """Set the right fan speed for current temp. to use with i8kfan command.
 
-    :current_temperature: current temperature value for the fan implied
-    :current_fan_speed: current fan speed
-    :temp_triggers: the threshold temperatures to trigger the fan speed change
-    :returns: right fan speed or "-" (means change nothing to i8kfan)
+    :fan: dictionary with fan values
 
     """
-    right_fan_speed = None  # the right fan speed for the current temp
-    if current_temperature >= temp_triggers[0]:
-        if current_temperature >= temp_triggers[1]:
-            right_fan_speed = 2
+    if fan['temp'] >= fan['low']:
+        if fan['temp'] >= fan['high']:
+            fan['rfs'] = 2
         else:
-            right_fan_speed = 1
+            fan['rfs'] = 1
     else:
-        right_fan_speed = 0
-    return right_fan_speed if right_fan_speed != current_fan_speed else "-"
+        fan['rfs'] = 0
+
+
+def check_airflow(cpu, gpu):
+    """Guarantee a minimal internal airflow when a side is cold and the other
+    hot.
+
+    :cpu: dictionary with cpu fan values
+    :gpu: dictionary with gpu fan values
+
+    """
+    speed_difference = gpu['rfs'] - cpu['rfs']
+    if abs(speed_difference) == 2:
+        if speed_difference > 1:
+            cpu['rfs'] += 1
+        else:
+            gpu['rfs'] += 1
 
 
 def main():
     """Main section"""
     # time between temperature checks
     interval = 1
-    # the temp thresholds to jump to a faster fan speed. Values greater than
-    # [g|c]pu[0] set the fan speed to 1 and the ones greater than [g|c]pu[1]
-    # set the speed to 2. Obviously, values minor than [g|c]pu[0] stop the fan
-    gpu_temps = [45, 53]
-    cpu_temps = [40, 50]
+    # set the temp thresholds to jump to a faster fan speed. Values greater
+    # than 'low' set the fan speed to 1 and the ones greater than 'high' set
+    # the speed to 2. Obviously, values minor than 'low' stop the fan
+    gpu = {'low': 45, 'high': 53}
+    cpu = {'low': 45, 'high': 50}
 
     # check if the i8k kernel module is already loaded
     if  "i8k" not in check_output("ls /proc/".split()):
@@ -105,18 +116,20 @@ def main():
     while True:
         try:
             # get current values
-            cpu_temp = int(check_output("i8kctl temp".split()))
+            cpu['temp'] = int(check_output("i8kctl temp".split()))
             gpu_out = check_output("nvidia-smi -q -d TEMPERATURE".split())
-            gpu_temp = int([s for s in gpu_out.split() if s.isdigit()][-1])
-            cpu_fan, gpu_fan = [int(f) for f in check_output("i8kfan").split()]
+            gpu['temp'] = int([s for s in gpu_out.split() if s.isdigit()][-1])
+            cpu['speed'], gpu['speed'] = [int(f) for f in
+                                          check_output("i8kfan").split()]
 
             # get the right speed values for each fan
-            cpu_rfs = get_right_fan_speed(cpu_temp, cpu_fan, cpu_temps)
-            gpu_rfs = get_right_fan_speed(gpu_temp, gpu_fan, gpu_temps)
-
+            set_right_fan_speed(cpu)
+            set_right_fan_speed(gpu)
+            # guarantee a minimal internal airflow when is needed
+            check_airflow(cpu, gpu)
             # if any of the fans needs to change their speed, change it!
-            if cpu_rfs != "-" or gpu_rfs != "-":
-                Popen("i8kfan {0} {1}".format(cpu_rfs, gpu_rfs).split(),
+            if cpu['rfs'] != cpu['speed'] or gpu['rfs'] != gpu['speed']:
+                Popen("i8kfan {0} {1}".format(cpu['rfs'], gpu['rfs']).split(),
                       stdout=PIPE)
 
             # wait a moment. We want a cooler laptop, aren't we?
@@ -132,6 +145,12 @@ if __name__ == "__main__":
 ###############################################################################
 #                                  Changelog                                  #
 ###############################################################################
+#
+# 0.4:
+#
+# * Guarantee a minimal internal airflow when a side is cold and the other hot
+# * Change temperature thresholds for cpu
+# * Refactorization
 #
 # 0.3:
 #
