@@ -41,19 +41,19 @@
 
 __author__ = "joe di castro <joe@joedicastro.com>"
 __license__ = "GNU General Public License version 3"
-__date__ = "16/06/2012"
-__version__ = "0.4"
+__date__ = "30/12/2012"
+__version__ = "0.5"
 
 
 try:
-    from os import linesep
+    from os import linesep, getpid
     from subprocess import check_output, Popen, PIPE
     from sys import exit, exc_info
     from time import sleep
 except ImportError:
     # Checks the installation of the necessary python modules
     print((linesep * 2).join(["An error found importing one module:",
-    str(exc_info()[1]), "You need to install it", "Stopping..."]))
+          str(exc_info()[1]), "You need to install it", "Stopping..."]))
     exit(-2)
 
 
@@ -110,8 +110,16 @@ def main():
     cpu = {'low': 45, 'high': 50}
 
     # check if the i8k kernel module is already loaded
-    if  "i8k" not in check_output("ls /proc/".split()):
+    if "i8k" not in check_output("ls /proc/".split()):
         exit("The i8k kernel module is not loaded")
+
+    # check if the script module is already running. Note that running this
+    # script starts a new process, so there is always almost one running.
+    running_procs = check_output("pgrep -fl i8kfans".split()).split(linesep)
+    curr_proc = str(getpid())  # the process ID for this script
+    procs = [p for p in running_procs if 'python' in p and curr_proc not in p]
+    if procs:
+        exit("The script is already running")
 
     while True:
         try:
@@ -145,6 +153,11 @@ if __name__ == "__main__":
 ###############################################################################
 #                                  Changelog                                  #
 ###############################################################################
+#
+# 0.5:
+#
+# * Check if the script is already running. Useful for use this in a cron job
+# * each several minutes to be sure it's always running.
 #
 # 0.4:
 #
